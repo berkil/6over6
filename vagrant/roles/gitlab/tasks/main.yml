@@ -1,0 +1,48 @@
+- name: Install prerequisite
+  apt:
+    name: ['python3-pip', 'apt-transport-https', 'ca-certificates', 'gnupg', 'software-properties-common', 'curl', 'lsb-release']
+    state: latest
+    update_cache: yes
+
+- name: Add Dockers official GPG key
+  apt_key:
+    id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Add Docker apt repository
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu jammy stable
+    state: present
+    filename: docker
+
+- name: Install docker daemon
+  apt:
+    name: ['docker-ce', 'docker-ce-cli', 'containerd.io']
+    state: latest
+    update_cache: yes
+
+- name: Install python docker library
+  pip:
+    name: ['docker']
+    state: present
+
+- name: gitlab container
+  docker_container:
+    shm_size: "256m"
+    name: gitlab
+    image: gitlab/gitlab-ce:latest
+    state: started
+    keep_volumes: no
+    pull: no
+    restart_policy: always
+    privileged: no
+    capabilities:
+      NET_BIND_SERVICE
+    published_ports:
+    - "80:80"
+    - "443:443"
+    - "9022:22"
+    env:
+      GITLAB_OMNIBUS_CONFIG: |
+        gitlab_rails['gitlab_shell_ssh_port'] = 9022

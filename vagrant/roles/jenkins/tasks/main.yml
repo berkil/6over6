@@ -18,7 +18,6 @@
   until: installation is not failed
   retries: 2
 
-
 - name: Restart Jenkins service
   systemd:
     state: restarted

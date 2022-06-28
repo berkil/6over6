@@ -1,0 +1,10 @@
+---
+
+- name: Install CICD system
+  hosts: all
+  gather_facts: true
+  become: yes
+  become_method: sudo
+  roles:
+    # - jenkins // enable this role in case you have a sadistic personality 
+    - gitlab
