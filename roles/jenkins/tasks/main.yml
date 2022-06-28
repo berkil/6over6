@@ -1,0 +1,35 @@
+- name: Add Jenkins official GPG key
+  apt_key:
+    url: https://pkg.jenkins.io/debian/jenkins-ci.org.key
+    state: present
+
+- name: Add Jenkins apt repository
+  apt_repository:
+    repo: deb http://pkg.jenkins.io/debian-stable binary/
+    state: present
+    filename: jenkins
+
+- name: Install Jenkins and prerequisites 
+  apt:
+    name: ['default-jre', 'default-jdk', 'git', 'git-ftp', 'jenkins']
+    state: latest
+    update_cache: yes
+  register: installation
+  until: installation is not failed
+  retries: 2
+
+
+- name: Restart Jenkins service
+  systemd:
+    state: restarted
+    name: jenkins.service
+
+- wait_for:
+    path: /var/lib/jenkins/secrets/initialAdminPassword
+
+- name: Get initial Jenkins password
+  shell: cat /var/lib/jenkins/secrets/initialAdminPassword
+  register: jenkins_init_pass
+
+- debug:
+    var: jenkins_init_pass.stdout
